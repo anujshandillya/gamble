@@ -39,25 +39,27 @@ func CreateUser(user models.User) (*mongo.InsertOneResult, bool) {
 }
 
 func CreateWallet(userId string) {
+	objId, _ := bson.ObjectIDFromHex(userId)
 	wallet := models.Wallet{
-		UserID:  userId,
+		UserID:  objId,
 		Balance: 0,
 	}
 	_, err := models.WalletCollection.InsertOne(context.TODO(), wallet)
 	lib.CheckErrorAndLog(err, "auth.go CreateWallet()")
 }
 func CreateVault(userId string) {
-
+	objId, _ := bson.ObjectIDFromHex(userId)
 	vault := models.Vault{
-		UserID:  userId,
+		UserID:  objId,
 		Balance: 0,
 	}
 	_, err := models.VaultCollection.InsertOne(context.TODO(), vault)
 	lib.CheckErrorAndLog(err, "auth.go CreateVault()")
 }
 func CreateStatistics(userId string) {
+	objId, _ := bson.ObjectIDFromHex(userId)
 	stats := models.Statistics{
-		UserID:  userId,
+		UserID:  objId,
 		Wins:    0,
 		Losses:  0,
 		Wagered: 0,
