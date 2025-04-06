@@ -16,14 +16,14 @@ import (
 
 func init() {
 	err := godotenv.Load()
-	lib.CheckErrorAndLog(err)
+	lib.CheckErrorAndLog(err, "main.go, init() line 19")
 	mongoUri := os.Getenv("MONGO_URI")
 	dbName := "gamble"
 	clientOptions := options.Client().ApplyURI(mongoUri)
 
 	client, err := mongo.Connect(clientOptions)
 
-	lib.CheckErrorAndLog(err)
+	lib.CheckErrorAndLog(err, "main.go, init() line 26")
 	fmt.Println("Connected to MongoDB.")
 
 	models.UserCollection = client.Database(dbName).Collection("user")
