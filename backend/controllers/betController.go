@@ -12,25 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type verificationData struct {
-	HashInput      string  `json:"hashInput"`
-	Hash           string  `json:"hash"`
-	UsedServerSeed *string `json:"usedServerSeed"`
-}
-
-type betResultResponse struct {
-	Currency       string           `json:"currency"`
-	Result         float64          `json:"result"`
-	Outcome        string           `json:"outcome"`
-	Payout         float64          `json:"payout"`
-	Wager          float64          `json:"wager"`
-	Profit         float64          `json:"profit"`
-	Nonce          int              `json:"nonce"`
-	ClientSeed     string           `json:"clientSeed"`
-	ServerSeedHash string           `json:"serverSeedHash"`
-	Verification   verificationData `json:"verification"`
-}
-
 func Limbo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var bet types.BetLimbo
@@ -77,13 +58,13 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 		profit = payout - wager
 	}
 
-	jsonVerificationData := verificationData{
+	jsonVerificationData := types.VerificationData{
 		HashInput:      inputHash,
 		Hash:           hexStr,
 		UsedServerSeed: &seed.Seed,
 	}
 
-	jsonResponse := betResultResponse{
+	jsonResponse := types.BetResultResponse{
 		Result:       result,
 		Currency:     currency,
 		Outcome:      outcome,
