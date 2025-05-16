@@ -50,6 +50,10 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = models.SeedCollection.FindOne(context.TODO(), bson.M{"seed": cookie.Value}).Decode(&seed)
+	if err != nil {
+		http.Error(w, "Failed to find or decode server seed", http.StatusInternalServerError)
+		return
+	}
 	fmt.Println(cookie.Value)
 	f, inputHash, hexStr := lib.RandomFloat(seed.Seed, bet.Seed, 1)
 	fmt.Println("outcome:", 1/(1-f))

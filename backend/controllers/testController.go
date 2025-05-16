@@ -42,7 +42,7 @@ func GetRandomSeed(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	pipeline := mongo.Pipeline{
-		{{"$sample", bson.D{{"size", 1}}}},
+		{{Key: "$sample", Value: bson.D{{Key: "size", Value: 1}}}},
 	}
 
 	cursor, err := models.SeedCollection.Aggregate(ctx, pipeline)
