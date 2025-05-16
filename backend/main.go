@@ -32,7 +32,8 @@ func init() {
 	models.StatisticsCollection = client.Database(dbName).Collection("statistics")
 	models.WalletCollection = client.Database(dbName).Collection("wallet")
 	models.VaultCollection = client.Database(dbName).Collection("vault")
-	models.TransactionsCollection = client.Database(dbName).Collection("transsactions")
+	models.TransactionsCollection = client.Database(dbName).Collection("transactions")
+	models.SeedCollection = client.Database(dbName).Collection("seeds")
 }
 
 func main() {
