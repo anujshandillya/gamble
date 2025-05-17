@@ -10,14 +10,12 @@ type BetLimbo struct {
 	Currency string
 	Amount   float64
 	Multi    float64
-	Seed     string
 }
 
 // CoinToss
 type BetCoinToss struct {
 	Currency string
 	Amount   float64
-	Seed     string
 }
 
 type NextCoinToss struct {
@@ -57,7 +55,6 @@ type BetMines struct {
 	Currency string
 	Amount   float64
 	Mines    int
-	Seed     string
 }
 
 type NextMines struct {
@@ -70,7 +67,6 @@ type BetWheels struct {
 	Amount   float64
 	Risk     string
 	Segments int
-	Seed     string
 }
 
 // HighLow
@@ -97,7 +93,6 @@ type BetPump struct {
 type BetBJ struct {
 	Currency string
 	Amount   float64
-	Seed     string
 }
 
 type NextBJ struct {

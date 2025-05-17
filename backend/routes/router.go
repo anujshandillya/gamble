@@ -35,6 +35,9 @@ func init() {
 	testRouter.HandleFunc("/increaseNonce", lib.VerifyJWT(controllers.IncreaseNonce)).Methods("POST")
 	testRouter.HandleFunc("/deleteSeed", lib.VerifyJWT(controllers.Delete)).Methods("DELETE")
 
+	testRouter.HandleFunc("/redis/set", lib.VerifyJWT(controllers.SetValue)).Methods("POST")
+	testRouter.HandleFunc("/redis/get", lib.VerifyJWT(controllers.GetValue)).Methods("POST")
+
 	// Game routes
 	gameRouter.HandleFunc("/limbo", lib.VerifyJWT(controllers.Limbo)).Methods("POST")
 	gameRouter.HandleFunc("/cointoss", lib.VerifyJWT(controllers.CoinToss)).Methods("POST")

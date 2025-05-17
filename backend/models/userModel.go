@@ -6,49 +6,49 @@ import (
 )
 
 type ct struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
 }
 
 type dt struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
-	states     [][]int
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
+	States     [][]int `json:"states"`
 }
 
 type mi struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
-	states     [][]int
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
+	States     [][]int `json:"states"`
 }
 
 type hl struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
-	states     [][]int
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
+	States     [][]int `json:"states"`
 }
 type pp struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
-	states     [][]int
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
+	States     [][]int `json:"states"`
 }
 
 type bj struct {
-	betId      string
-	wager      float64
-	multi      float64
-	currentWin float64
-	states     [][]int
+	BetId      string  `json:"bet_id"`
+	Wager      float64 `json:"wager"`
+	Multi      float64 `json:"multi"`
+	CurrentWin float64 `json:"currentwin"`
+	States     [][]int `json:"states"`
 }
 
 type currentBets struct {
