@@ -18,6 +18,17 @@ type Seed struct {
 	ID string `json:"id"`
 }
 
+type redisSchema struct {
+	ServerSeed     string `json:"serverseed"`
+	ServerSeedHash string `json:"serverseedhash"`
+	ClientSeed     string `json:"clientseed"`
+	Nonce          uint16 `json:"nonce"`
+}
+
+type redisScheme2 struct {
+	Key string `json:"key"`
+}
+
 // Seed
 func GenerateServerSeed(w http.ResponseWriter, r *http.Request) {
 	cursor := helpers.CreateNewSeed()
@@ -46,6 +57,34 @@ func GetRandomSeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cursor, err := models.SeedCollection.Aggregate(ctx, pipeline)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(ctx)
+
+	var result bson.M
+	if cursor.Next(ctx) {
+		err := cursor.Decode(&result)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Random Document:", result)
+	} else {
+		log.Println("No document found")
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{"message": "seed document", "document": result})
+}
+
+func GetRandomSeedCombination(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	pipeline := mongo.Pipeline{
+		{{Key: "$sample", Value: bson.D{{Key: "size", Value: 1}}}},
+	}
+
+	cursor, err := models.CombinationsCollection.Aggregate(ctx, pipeline)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -110,4 +149,60 @@ func IncreaseNonce(w http.ResponseWriter, r *http.Request) {
 	id := x.ID
 	result := GetSeedByIDAndUpdate(id)
 	json.NewEncoder(w).Encode(map[string]any{"id": id, "result": result})
+}
+
+// redis
+func SetValue(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var scheme redisSchema
+
+	// Decode the incoming JSON request body into the scheme struct
+	err := json.NewDecoder(r.Body).Decode(&scheme)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	jsonData, err := json.Marshal(scheme)
+	if err != nil {
+		http.Error(w, "Failed to serialize data", http.StatusInternalServerError)
+		return
+	}
+
+	key := "activeSeeds:" + "aman"
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, time.Hour).Err()
+	if err != nil {
+		http.Error(w, "Failed to set value in Redis", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": "Value set successfully"})
+}
+
+func GetValue(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var scheme redisScheme2
+
+	err := json.NewDecoder(r.Body).Decode(&scheme)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	val, err := lib.RedisInstance.Get(lib.RedisCtx, scheme.Key).Result()
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	var actualjson redisSchema
+	err = json.Unmarshal([]byte(val), &actualjson)
+
+	if err != nil {
+		w.WriteHeader(http.StatusExpectationFailed)
+		return
+	}
+	json.NewEncoder(w).Encode(actualjson)
 }
