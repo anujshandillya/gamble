@@ -17,7 +17,7 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 	var payout float64
 	var profit float64
 	err := json.NewDecoder(r.Body).Decode(&bet)
-	lib.CheckErrorAndLog(err, "betController.go, Limbo() line 34")
+	lib.CheckErrorAndLog(err, "betController.go, Limbo() line 20")
 	email, err := r.Cookie("email")
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)

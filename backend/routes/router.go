@@ -49,4 +49,13 @@ func init() {
 	gameRouter.HandleFunc("/highlow", lib.VerifyJWT(controllers.HighLow)).Methods("POST")
 	gameRouter.HandleFunc("/pump", lib.VerifyJWT(controllers.Pump)).Methods("POST")
 	gameRouter.HandleFunc("/bj", lib.VerifyJWT(controllers.BJ)).Methods("POST")
+
+	// Next routes
+	gameRouter.HandleFunc("/cointoss/next", lib.VerifyJWT(controllers.CoinTossNext)).Methods("POST")
+	gameRouter.HandleFunc("/dragontower/next", lib.VerifyJWT(controllers.DragonTowerNext)).Methods("POST")
+	gameRouter.HandleFunc("/mines/next", lib.VerifyJWT(controllers.MinesNext)).Methods("POST")
+	gameRouter.HandleFunc("/highlow/next", lib.VerifyJWT(controllers.HighLowNext)).Methods("POST")
+	gameRouter.HandleFunc("/pump/next", lib.VerifyJWT(controllers.PumpNext)).Methods("POST")
+	gameRouter.HandleFunc("/bj/next", lib.VerifyJWT(controllers.BJNext)).Methods("POST")
+
 }
