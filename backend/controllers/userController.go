@@ -64,6 +64,25 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Path:     "/",
 	})
+	http.SetCookie(w, &http.Cookie{
+		Name:     "email",
+		Value:    userFound.Email,
+		Expires:  time.Now().Add(time.Hour * 48),
+		HttpOnly: true,
+		Path:     "/",
+	})
+	key := "activeSeeds:" + userFound.Email
+	_, err = lib.RedisInstance.Get(lib.RedisCtx, key).Result()
+
+	if err != nil {
+		combination, err := lib.GetRandomSeedCombination()
+		if err != nil {
+			combination, _, _ = lib.GetNewCombination()
+		}
+		fmt.Println("combination", combination)
+		jsonData, _ := json.Marshal(combination)
+		lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, time.Hour*24)
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]any{"message": "Login successful", "user": userFound})
 }

@@ -1,15 +1,13 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 
 	"github.com/anujshandillya/gambleserver/lib"
-	"github.com/anujshandillya/gambleserver/models"
 	"github.com/anujshandillya/gambleserver/types"
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func Limbo(w http.ResponseWriter, r *http.Request) {
@@ -18,35 +16,32 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 	var outcome string
 	var payout float64
 	var profit float64
-	// var nonce int16
 	err := json.NewDecoder(r.Body).Decode(&bet)
 	lib.CheckErrorAndLog(err, "betController.go, Limbo() line 34")
-	var seed *models.Seed
-	clientSeed := bet.Seed
+	email, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
+		return
+	}
+
+	userEmail := email.Value
+	combinationStr := lib.GetAndSetRedisSeed(userEmail)
+	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
 	wager := bet.Amount
 	currency := bet.Currency
-	cookie, err := r.Cookie("serverseed")
-	if err != nil {
-		http.Error(w, "Cookie not found", http.StatusBadRequest)
-		return
-	}
-	err = models.SeedCollection.FindOne(context.TODO(), bson.M{"seed": cookie.Value}).Decode(&seed)
-	if err != nil {
-		http.Error(w, "Failed to find or decode server seed", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println(cookie.Value)
-	f, inputHash, hexStr := lib.RandomFloat(seed.Seed, bet.Seed, 1)
+
+	f, inputHash, hexStr := lib.RandomFloat(combinationJson.ServerSeed, combinationJson.ClientSeed, int(combinationJson.Nonce))
 	fmt.Println("outcome:", 1/(1-f))
-	result := 1 / (1 - f)
+	result := math.Round((1/(1-f))*100) / 100
 
 	if result > bet.Multi {
-		outcome = "lose"
-	} else {
 		outcome = "win"
+	} else {
+		outcome = "lose"
 	}
 
-	if outcome != "lose" {
+	if outcome != "win" {
 		payout = 0
 	} else {
 		payout = bet.Multi * wager
@@ -58,10 +53,12 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 		profit = payout - wager
 	}
 
+	lib.IncreaseNonce(userEmail)
+
 	jsonVerificationData := types.VerificationData{
 		HashInput:      inputHash,
 		Hash:           hexStr,
-		UsedServerSeed: &seed.Seed,
+		UsedServerSeed: &combinationJson.ServerSeed,
 	}
 
 	jsonResponse := types.BetResultResponse{
@@ -71,8 +68,8 @@ func Limbo(w http.ResponseWriter, r *http.Request) {
 		Payout:       payout,
 		Wager:        wager,
 		Profit:       profit,
-		Nonce:        27,
-		ClientSeed:   clientSeed,
+		Nonce:        int(combinationJson.Nonce),
+		ClientSeed:   combinationJson.ClientSeed,
 		Verification: jsonVerificationData,
 	}
 	json.NewEncoder(w).Encode(jsonResponse)
