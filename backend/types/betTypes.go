@@ -42,7 +42,6 @@ type BetDice struct {
 	Multi     float64
 	OverUnder string
 	Value     float64
-	Seed      string
 }
 
 // Slides
@@ -66,7 +65,7 @@ type BetWheels struct {
 	Currency string
 	Amount   float64
 	Risk     string
-	Segments int
+	Segments uint8
 }
 
 // HighLow
