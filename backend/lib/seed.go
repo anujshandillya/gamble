@@ -20,7 +20,7 @@ func createClientSeed() string {
 	clientSeed := ""
 
 	// Generate a random string of 10 characters
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		// Generate a secure random index
 		randomIndexBig, err := rand.Int(rand.Reader, big.NewInt(int64(AsciiSliceSize)))
 		if err != nil {
@@ -102,7 +102,6 @@ func GetNewCombination() (models.Combinations, *mongo.InsertOneResult, error) {
 
 	var combination models.Combinations
 
-	combination.ClientSeed = clientSeed
 	combination.ClientSeed = clientSeed
 	combination.Nonce = 0
 	combination.ServerSeed = randomSeed.Seed
