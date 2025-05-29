@@ -82,3 +82,14 @@ func IncreaseNonce(userEmail string) error {
 
 	return nil
 }
+
+func DeleteRedisBet(userEmail, game string) error {
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, game)
+
+	err := RedisInstance.Del(RedisCtx, key).Err()
+	if err != nil {
+		return fmt.Errorf("failed to delete existing bet: %w", err)
+	}
+
+	return nil
+}

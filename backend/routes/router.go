@@ -40,12 +40,13 @@ func init() {
 
 	// Game routes
 	gameRouter.HandleFunc("/limbo", lib.VerifyJWT(controllers.Limbo)).Methods("POST")
+	gameRouter.HandleFunc("/dice", lib.VerifyJWT(controllers.Dice)).Methods("POST")
+	gameRouter.HandleFunc("/wheel", lib.VerifyJWT(controllers.Wheel)).Methods("POST")
+	gameRouter.HandleFunc("/slides", lib.VerifyJWT(controllers.Slides)).Methods("POST")
+	
 	gameRouter.HandleFunc("/cointoss", lib.VerifyJWT(controllers.CoinToss)).Methods("POST")
 	gameRouter.HandleFunc("/dragontower", lib.VerifyJWT(controllers.DragonTower)).Methods("POST")
-	gameRouter.HandleFunc("/dice", lib.VerifyJWT(controllers.Dice)).Methods("POST")
-	gameRouter.HandleFunc("/slides", lib.VerifyJWT(controllers.Slides)).Methods("POST")
 	gameRouter.HandleFunc("/mines", lib.VerifyJWT(controllers.Mines)).Methods("POST")
-	gameRouter.HandleFunc("/wheel", lib.VerifyJWT(controllers.Wheel)).Methods("POST")
 	gameRouter.HandleFunc("/highlow", lib.VerifyJWT(controllers.HighLow)).Methods("POST")
 	gameRouter.HandleFunc("/pump", lib.VerifyJWT(controllers.Pump)).Methods("POST")
 	gameRouter.HandleFunc("/bj", lib.VerifyJWT(controllers.BJ)).Methods("POST")

@@ -12,27 +12,12 @@ type BetLimbo struct {
 	Multi    float64
 }
 
-// CoinToss
-type BetCoinToss struct {
+// Wheel
+type BetWheels struct {
 	Currency string
 	Amount   float64
-}
-
-type NextCoinToss struct {
-	Round     string
-	Selection string
-}
-
-// DragonTower
-type BetDragonTower struct {
-	Currency   string
-	Amount     float64
-	Difficulty string
-	Seed       string
-}
-
-type NextDragonTower struct {
-	Egg int
+	Risk     string
+	Segments uint8
 }
 
 // Dice
@@ -49,6 +34,29 @@ type BetDice struct {
 
 // }
 
+// CoinToss
+type BetCoinToss struct {
+	Currency string
+	Amount   float64
+}
+
+type NextCoinToss struct {
+	Round     int
+	Selection int
+}
+
+// DragonTower
+type BetDragonTower struct {
+	Currency   string
+	Amount     float64
+	Difficulty string
+}
+
+type NextDragonTower struct {
+	Egg   int
+	Level int
+}
+
 // Mines
 type BetMines struct {
 	Currency string
@@ -58,14 +66,6 @@ type BetMines struct {
 
 type NextMines struct {
 	Field int
-}
-
-// Wheel
-type BetWheels struct {
-	Currency string
-	Amount   float64
-	Risk     string
-	Segments uint8
 }
 
 // HighLow
@@ -96,4 +96,63 @@ type BetBJ struct {
 
 type NextBJ struct {
 	Action string
+}
+
+type ActiveBetCoinToss struct {
+	Game       string  `json:"game"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      [][]int `json:"state"`
+}
+type ActiveBetDragonTower struct {
+	Game       string  `json:"game"`
+	Difficulty string  `json:"difficulty"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      [][]int `json:"state"`
+	LevelSet   [][]int `json:"levelSet"`
+}
+type ActiveBetMines struct {
+	Game       string  `json:"game"`
+	MinesCount uint8   `json:"minesCount"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      []uint8 `json:"state"`
+	MinesSet   []uint8 `json:"minesSet"`
+}
+type ActiveBetBJ struct {
+	Game       string  `json:"game"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      [][]int `json:"state"`
+}
+type ActiveBetPump struct {
+	Game       string  `json:"game"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      [][]int `json:"state"`
+}
+type ActiveBetHighLow struct {
+	Game       string  `json:"game"`
+	ServerSeed string  `json:"serverSeed"`
+	ClientSeed string  `json:"clientSeed"`
+	Nonce      uint16  `json:"nonce"`
+	Status     string  `json:"status"`
+	Amount     float64 `json:"amount"`
+	State      [][]int `json:"state"`
 }
