@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: gamble-backend
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb+srv://anujshandillya:dbpassword@cluster0.jobi4v9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - JWT_SECRET="GamblingIsBadForYourMind"
+      - REDIS_DB_URI="localhost:6379"
+      - REDIS_DB_PASSWORD=""
+      - REDIS_DB=0
+    depends_on:
+      - redis-stack
+    networks:
+      - gamble-network
+    # Enable watch mode for development
+    command: air -c .air.toml
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: gamble-redis-stack
+    ports:
+      - "6379:6379"  # Redis port
+      - "8001:8001"  # RedisInsight port
+    volumes:
+      - redis-stack-data:/data
+    networks:
+      - gamble-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  go-modules:
+    name: gamble-go-modules
+  redis-stack-data:
+    name: gamble-redis-stack-data
+
+networks:
+  gamble-network:
+    name: gamble-network
+    driver: bridge 
