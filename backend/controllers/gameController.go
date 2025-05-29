@@ -225,14 +225,116 @@ func Wheel(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(jsonResponse)
 }
 
-func CoinToss(w http.ResponseWriter, r *http.Request) {}
+func CoinToss(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bet types.BetCoinToss
+	json.NewDecoder(r.Body).Decode(&bet)
 
-func DragonTower(w http.ResponseWriter, r *http.Request) {}
+	email, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
+		return
+	}
 
-func Mines(w http.ResponseWriter, r *http.Request) {}
+	userEmail := email.Value
+	combinationStr := lib.GetAndSetRedisSeed(userEmail)
+	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
 
-func HighLow(w http.ResponseWriter, r *http.Request) {}
+	current := types.ActiveBetCoinToss{
+		Game:       "cointoss",
+		ServerSeed: combinationJson.ServerSeed,
+		ClientSeed: combinationJson.ClientSeed,
+		Nonce:      combinationJson.Nonce,
+		Status:     "active",
+		Amount:     bet.Amount,
+		State:      [][]int{},
+	}
 
-func Pump(w http.ResponseWriter, r *http.Request) {}
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "cointoss")
 
-func BJ(w http.ResponseWriter, r *http.Request) {}
+	jsonData, err := json.Marshal(current)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
+	}
+
+	lib.IncreaseNonce(userEmail)
+
+	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "cointoss", "status": 200})
+}
+
+func DragonTower(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bet types.BetDragonTower
+	json.NewDecoder(r.Body).Decode(&bet)
+
+	email, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
+		return
+	}
+
+	userEmail := email.Value
+	combinationStr := lib.GetAndSetRedisSeed(userEmail)
+	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
+
+	levelSet := lib.GetDragonTowerLevel(bet.Difficulty, combinationJson.ServerSeed, combinationJson.ClientSeed, int(combinationJson.Nonce))
+
+	current := types.ActiveBetDragonTower{
+		Game:       "dragontower",
+		Difficulty: bet.Difficulty,
+		ServerSeed: combinationJson.ServerSeed,
+		ClientSeed: combinationJson.ClientSeed,
+		Nonce:      combinationJson.Nonce,
+		Status:     "active",
+		Amount:     bet.Amount,
+		State:      [][]int{},
+		LevelSet:   levelSet,
+	}
+
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "dragontower")
+
+	jsonData, err := json.Marshal(current)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
+	}
+
+	lib.IncreaseNonce(userEmail)
+
+	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "dragontower", "status": 200})
+}
+
+func Mines(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func HighLow(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func Pump(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func BJ(w http.ResponseWriter, r *http.Request) {
+
+}

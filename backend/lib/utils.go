@@ -37,3 +37,15 @@ func RandomFloat(serverSeed, clientSeed string, nonce int) (float64, string, str
 
 	return float64(intVal) / float64(0xffffffff), input, hexStr
 }
+
+func RandomUInts(serverSeed, clientSeed string, nonce int, level int) (float64, string, string) {
+	input := fmt.Sprintf("%s:%s:%d:%d", serverSeed, clientSeed, nonce, level)
+	hash := sha256.Sum256([]byte(input))
+
+	hexStr := hex.EncodeToString(hash[:4])
+
+	intVal, err := strconv.ParseUint(hexStr, 16, 64)
+	CheckErrorAndLog(err, "could not handle hashing the seed")
+
+	return float64(intVal) / float64(0xffffffff), input, hexStr
+}
