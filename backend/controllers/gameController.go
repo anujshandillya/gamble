@@ -248,14 +248,23 @@ func CoinToss(w http.ResponseWriter, r *http.Request) {
 		Nonce:      combinationJson.Nonce,
 		Status:     "active",
 		Amount:     bet.Amount,
-		State:      [][]uint8{},
+		State:      [][]int{},
 	}
 
-	err = lib.StoreActiveBet(userEmail, "cointoss", current)
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "cointoss")
 
+	jsonData, err := json.Marshal(current)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
 	}
 
 	lib.IncreaseNonce(userEmail)
@@ -279,21 +288,34 @@ func DragonTower(w http.ResponseWriter, r *http.Request) {
 	combinationStr := lib.GetAndSetRedisSeed(userEmail)
 	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
 
+	levelSet := lib.GetDragonTowerLevel(bet.Difficulty, combinationJson.ServerSeed, combinationJson.ClientSeed, int(combinationJson.Nonce))
+
 	current := types.ActiveBetDragonTower{
 		Game:       "dragontower",
+		Difficulty: bet.Difficulty,
 		ServerSeed: combinationJson.ServerSeed,
 		ClientSeed: combinationJson.ClientSeed,
 		Nonce:      combinationJson.Nonce,
 		Status:     "active",
 		Amount:     bet.Amount,
-		State:      [][]uint8{},
+		State:      [][]int{},
+		LevelSet:   levelSet,
 	}
 
-	err = lib.StoreActiveBet(userEmail, "dragontower", current)
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "dragontower")
 
+	jsonData, err := json.Marshal(current)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
 	}
 
 	lib.IncreaseNonce(userEmail)
@@ -302,153 +324,17 @@ func DragonTower(w http.ResponseWriter, r *http.Request) {
 }
 
 func Mines(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var bet types.BetCoinToss
-	json.NewDecoder(r.Body).Decode(&bet)
 
-	email, err := r.Cookie("email")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
-		return
-	}
-
-	userEmail := email.Value
-	combinationStr := lib.GetAndSetRedisSeed(userEmail)
-	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
-
-	current := types.ActiveBetMines{
-		Game:       "mines",
-		ServerSeed: combinationJson.ServerSeed,
-		ClientSeed: combinationJson.ClientSeed,
-		Nonce:      combinationJson.Nonce,
-		Status:     "active",
-		Amount:     bet.Amount,
-		State:      [][]uint8{},
-	}
-
-	err = lib.StoreActiveBet(userEmail, "mines", current)
-
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
-	}
-
-	lib.IncreaseNonce(userEmail)
-
-	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "mines", "status": 200})
 }
 
 func HighLow(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var bet types.BetCoinToss
-	json.NewDecoder(r.Body).Decode(&bet)
 
-	email, err := r.Cookie("email")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
-		return
-	}
-
-	userEmail := email.Value
-	combinationStr := lib.GetAndSetRedisSeed(userEmail)
-	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
-
-	current := types.ActiveBetHighLow{
-		Game:       "highlow",
-		ServerSeed: combinationJson.ServerSeed,
-		ClientSeed: combinationJson.ClientSeed,
-		Nonce:      combinationJson.Nonce,
-		Status:     "active",
-		Amount:     bet.Amount,
-		State:      [][]uint8{},
-	}
-
-	err = lib.StoreActiveBet(userEmail, "highlow", current)
-
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
-	}
-
-	lib.IncreaseNonce(userEmail)
-
-	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "highlow", "status": 200})
 }
 
 func Pump(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var bet types.BetCoinToss
-	json.NewDecoder(r.Body).Decode(&bet)
 
-	email, err := r.Cookie("email")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
-		return
-	}
-
-	userEmail := email.Value
-	combinationStr := lib.GetAndSetRedisSeed(userEmail)
-	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
-
-	current := types.ActiveBetPump{
-		Game:       "pump",
-		ServerSeed: combinationJson.ServerSeed,
-		ClientSeed: combinationJson.ClientSeed,
-		Nonce:      combinationJson.Nonce,
-		Status:     "active",
-		Amount:     bet.Amount,
-		State:      [][]uint8{},
-	}
-
-	err = lib.StoreActiveBet(userEmail, "pump", current)
-
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
-	}
-
-	lib.IncreaseNonce(userEmail)
-
-	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "pump", "status": 200})
 }
 
 func BJ(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var bet types.BetCoinToss
-	json.NewDecoder(r.Body).Decode(&bet)
 
-	email, err := r.Cookie("email")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
-		return
-	}
-
-	userEmail := email.Value
-	combinationStr := lib.GetAndSetRedisSeed(userEmail)
-	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
-
-	current := types.ActiveBetBJ{
-		Game:       "bj",
-		ServerSeed: combinationJson.ServerSeed,
-		ClientSeed: combinationJson.ClientSeed,
-		Nonce:      combinationJson.Nonce,
-		Status:     "active",
-		Amount:     bet.Amount,
-		State:      [][]uint8{},
-	}
-
-	err = lib.StoreActiveBet(userEmail, "bj", current)
-
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusNotAcceptable)
-		json.NewEncoder(w).Encode(map[string]any{"message": "something went wrong!", "status": 406, "error": err.Error()})
-	}
-
-	lib.IncreaseNonce(userEmail)
-
-	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "bj", "status": 200})
 }
