@@ -1,5 +1,10 @@
 package lib
 
+import (
+	"fmt"
+	"math"
+)
+
 var lowSegment = map[uint8][]float64{
 	10: {
 		1.2, 1.2, 1.2, 1.2, 0, 1.5, 1.2,
@@ -105,4 +110,75 @@ func WheelResult(risk string, segments uint8, index float64) float64 {
 	}
 
 	return result
+}
+
+func GetDragonTowerLevel(difficulty string, serverSeed string, clientSeed string, nonce int) [][]int {
+	if difficulty == "easy" {
+		var level [][]int
+		for i := range 9 {
+			row := []int{1, 1, 1, 1}
+			for _ = range 3 {
+				f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i+1)
+				index := math.Floor(f * 4)
+				row[int(index)] = 0
+			}
+			level = append(level, row)
+
+		}
+		fmt.Println("level", level)
+		return level
+	} else if difficulty == "medium" {
+		var level [][]int
+		for i := range 9 {
+			row := []int{1, 1, 1}
+			for _ = range 3 {
+				f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i+1)
+				index := math.Floor(f * 3)
+				row[int(index)] = 0
+			}
+			level = append(level, row)
+		}
+		fmt.Println("level", level)
+		return level
+	} else if difficulty == "hard" {
+		var level [][]int
+		for i := range 9 {
+			row := []int{1, 1}
+			for _ = range 3 {
+				f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i+1)
+				index := math.Floor(f * 2)
+				row[int(index)] = 0
+			}
+			level = append(level, row)
+		}
+		fmt.Println("level", level)
+		return level
+	} else if difficulty == "expert" {
+		var level [][]int
+		for i := range 9 {
+			row := []int{0, 0, 0}
+			for _ = range 3 {
+				f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i+1)
+				index := math.Floor(f * 3)
+				row[int(index)] = 1
+			}
+			level = append(level, row)
+		}
+		fmt.Println("level", level)
+		return level
+	} else if difficulty == "master" {
+		var level [][]int
+		for i := range 9 {
+			row := []int{0, 0, 0, 0}
+			for _ = range 3 {
+				f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i+1)
+				index := math.Floor(f * 4)
+				row[int(index)] = 1
+			}
+			level = append(level, row)
+		}
+		fmt.Println("level", level)
+		return level
+	}
+	return [][]int{}
 }
