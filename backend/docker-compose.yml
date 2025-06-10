@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: .
@@ -11,9 +9,9 @@ services:
       - "4000:4000"
     environment:
       - MONGO_URI=mongodb+srv://anujshandillya:dbpassword@cluster0.jobi4v9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-      - JWT_SECRET="GamblingIsBadForYourMind"
-      - REDIS_DB_URI="localhost:6379"
-      - REDIS_DB_PASSWORD=""
+      - JWT_SECRET=GamblingIsBadForYourMind
+      - REDIS_DB_URI=redis-stack:6379
+      - REDIS_DB_PASSWORD=
       - REDIS_DB=0
     depends_on:
       - redis-stack
@@ -21,6 +19,15 @@ services:
       - gamble-network
     # Enable watch mode for development
     command: air -c .air.toml
+    develop:
+      watch:
+      - action: sync
+        path: ./
+        target: /app
+        ignore:
+          - .git
+          - .gitignore
+          - node_modules/
 
   redis-stack:
     image: redis/redis-stack:latest
