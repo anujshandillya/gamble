@@ -182,3 +182,16 @@ func GetDragonTowerLevel(difficulty string, serverSeed string, clientSeed string
 	}
 	return [][]int{}
 }
+
+func GetMinesSet(minesCount int, serverSeed string, clientSeed string, nonce int) map[int]bool {
+	minesSet := make(map[int]bool)
+	i := 0
+	for len(minesSet) < minesCount {
+		f, _, _ := RandomUInts(serverSeed, clientSeed, nonce, i)
+		index := math.Floor(f * 25)
+		minesSet[int(index)] = true
+		i++
+	}
+	fmt.Println("minesSet", minesSet)
+	return minesSet
+}

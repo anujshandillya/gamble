@@ -65,7 +65,7 @@ type BetMines struct {
 }
 
 type NextMines struct {
-	Field int
+	Field []int
 }
 
 // HighLow
@@ -119,15 +119,15 @@ type ActiveBetDragonTower struct {
 	LevelSet   [][]int `json:"levelSet"`
 }
 type ActiveBetMines struct {
-	Game       string  `json:"game"`
-	MinesCount uint8   `json:"minesCount"`
-	ServerSeed string  `json:"serverSeed"`
-	ClientSeed string  `json:"clientSeed"`
-	Nonce      uint16  `json:"nonce"`
-	Status     string  `json:"status"`
-	Amount     float64 `json:"amount"`
-	State      []uint8 `json:"state"`
-	MinesSet   []uint8 `json:"minesSet"`
+	Game       string       `json:"game"`
+	MinesCount int          `json:"minesCount"`
+	ServerSeed string       `json:"serverSeed"`
+	ClientSeed string       `json:"clientSeed"`
+	Nonce      uint16       `json:"nonce"`
+	Status     string       `json:"status"`
+	Amount     float64      `json:"amount"`
+	State      []int        `json:"state"`
+	MinesSet   map[int]bool `json:"minesSet"`
 }
 type ActiveBetBJ struct {
 	Game       string  `json:"game"`

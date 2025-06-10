@@ -193,7 +193,92 @@ func DragonTowerNext(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func MinesNext(w http.ResponseWriter, r *http.Request) {}
+func MinesNext(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var mines types.NextMines
+	json.NewDecoder(r.Body).Decode(&mines)
+
+	field := mines.Field
+
+	email, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
+		return
+	}
+
+	userEmail := email.Value
+
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "mines")
+
+	bet := lib.RedisInstance.Get(lib.RedisCtx, key)
+	err = bet.Err()
+
+	if err != nil {
+		http.Error(w, "No active bet found", http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]any{"message": "no active bet found", "status": 404})
+		return
+	}
+
+	var activeBet types.ActiveBetMines
+	err = json.Unmarshal([]byte(bet.Val()), &activeBet)
+
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to unmarshal bet: %w", err)})
+		return
+	}
+
+	state := activeBet.State
+	mineSet := activeBet.MinesSet
+	state = append(state, field...)
+	activeBet.State = state
+
+	for i := range len(field) {
+		fmt.Println("indexvalue:", len(field)-i, mineSet[state[len(state)-(len(field)-i)]], state, activeBet.State)
+		if mineSet[state[len(state)-(len(field)-i)]] {
+			fmt.Println("mine found at index:", state[len(field)-i-1], activeBet.State)
+			err := lib.DeleteRedisBet(userEmail, "mines")
+			if err != nil {
+				http.Error(w, "Failed to delete bet", http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(map[string]any{"message": "failed to delete bet", "status": 500})
+				return
+			}
+			mineState := make([]bool, 25)
+			for k, v := range mineSet {
+				mineState[k] = v
+			}
+			json.NewEncoder(w).Encode(map[string]any{
+				"result": "lose",
+				"multi":  0,
+				"state":  mineState,
+				"amount": activeBet.Amount,
+				"mines":  activeBet.MinesCount,
+			})
+			return
+		}
+	}
+
+	jsonData, err := json.Marshal(activeBet)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{
+		"multi": 1.96,
+		"state": state,
+	})
+}
 
 func HighLowNext(w http.ResponseWriter, r *http.Request) {}
 

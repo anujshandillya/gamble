@@ -324,7 +324,54 @@ func DragonTower(w http.ResponseWriter, r *http.Request) {
 }
 
 func Mines(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var bet types.BetMines
+	json.NewDecoder(r.Body).Decode(&bet)
 
+	email, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]any{"message": "unauthorized", "status": 401})
+	}
+
+	userEmail := email.Value
+	combinationStr := lib.GetAndSetRedisSeed(userEmail)
+	combinationJson := lib.UnMarshalRedisSeed(combinationStr)
+
+	mineSet := lib.GetMinesSet(bet.Mines, combinationJson.ServerSeed, combinationJson.ClientSeed, int(combinationJson.Nonce))
+
+	current := types.ActiveBetMines{
+		Game:       "mines",
+		MinesCount: bet.Mines,
+		ServerSeed: combinationJson.ServerSeed,
+		ClientSeed: combinationJson.ClientSeed,
+		Nonce:      combinationJson.Nonce,
+		Status:     "active",
+		Amount:     bet.Amount,
+		State:      []int{},
+		MinesSet:   mineSet,
+	}
+
+	key := fmt.Sprintf("activeBet:%s:%s", userEmail, "mines")
+
+	jsonData, err := json.Marshal(current)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to marshal data: %w", err)})
+		return
+	}
+
+	err = lib.RedisInstance.Set(lib.RedisCtx, key, jsonData, 0).Err()
+
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusExpectationFailed)
+		json.NewEncoder(w).Encode(map[string]any{"message": "error marshaling the data", "status": 417, "error": fmt.Errorf("failed to set data: %w", err)})
+		return
+	}
+
+	lib.IncreaseNonce(userEmail)
+
+	json.NewEncoder(w).Encode(map[string]any{"message": "bet placed", "game": "mines", "status": 200})
 }
 
 func HighLow(w http.ResponseWriter, r *http.Request) {
